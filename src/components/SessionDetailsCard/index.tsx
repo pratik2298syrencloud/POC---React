@@ -13,8 +13,8 @@ import { ScheduleSession } from "../../pages/Calender";
 
 interface SessionCardProps {
   session: ScheduleSession;
-  onEdit: () => void;
-  onDelete: () => void;
+  onEdit?: (session: ScheduleSession) => void;
+  onDelete: (caseNumber: string) => void;
 }
 
 export const SessionCard = ({
@@ -68,10 +68,10 @@ export const SessionCard = ({
 
           {/* Right: Icons */}
           <Stack direction="row" spacing={1}>
-            <IconButton onClick={onEdit}>
+            <IconButton onClick={()=>onEdit(session)}>
               <EditIcon color="primary" />
             </IconButton>
-            <IconButton onClick={onDelete}>
+            <IconButton onClick={()=>onDelete(session.caseNumber)}>
               <DeleteIcon color="error" />
             </IconButton>
           </Stack>

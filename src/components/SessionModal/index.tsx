@@ -8,7 +8,8 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import { EmailAddresses, SessionTime } from "./Calender";
+import { EmailAddresses, SessionTime } from "../../pages/Calender";
+
 
 interface SessionModelProps {
   selectedDate: string | null;
@@ -127,3 +128,6 @@ const SessionModal = ({
 };
 
 export default SessionModal;
+
+
+

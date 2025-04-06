@@ -14,10 +14,10 @@ import {
   Stack,
   Drawer,
 } from "@mui/material";
-import SessionModal from "./SessionModal";
 import { v4 as uuidv4 } from "uuid";
 import { SessionCard } from "../components/SessionDetailsCard";
 import CustomSnackbar, { CustomSnackbarProps } from "../components/Snackbar";
+import SessionModal from "../components/SessionModal";
 
 // Define types for session data
 export interface Session {
@@ -51,7 +51,6 @@ const viewModeConfig: { label: string; value: string }[] = [
 const Calendar: React.FC = () => {
   const [open, setOpen] = useState<boolean>(false);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
-  const [sessions, setSessions] = useState<Session[]>([]);
   const [viewMode, setViewMode] = useState<"day" | "week" | "month">("week");
   const [sessionTime, setSessionTime] = useState<SessionTime>({
     hour: "",
@@ -84,30 +83,13 @@ const Calendar: React.FC = () => {
     onClose: () => setSnackbarData((prev) => ({ ...prev, open: false })),
   });
 
-  // const handleDateClick = (dateWithYear: string) => {
-  //   setSelectedDate(dateWithYear); // Store full date (including year)
-  //   setOpen(true);
-  // };
-
-  const handleDateClick = (dateWithYear: string) => {
-    setSelectedDate(dateWithYear);
-
-    // Try to find a session for this date
-    const existing = scheduleSessions.find(
-      (s) => s.selectedDate === dateWithYear
-    );
-
-    if (existing) {
-      setSessionTime(existing.sessionTiming);
-      setEmailAddresses(existing.emailAddresses);
-      setActiveSession(existing);
-    } else {
-      // If no session scheduled, reset form state
+  const onDateClick = (dateWithYear: string) => {
+    // Only reset if you're NOT already in the modal with values
+    if (!open) {
       resetFormState();
-      setActiveSession(null);
-      setSelectedDate(dateWithYear);
     }
-
+    setActiveSession(null);
+    setSelectedDate(dateWithYear);
     setOpen(true);
   };
 
@@ -190,7 +172,7 @@ const Calendar: React.FC = () => {
                   border={2}
                   borderRadius={2}
                   textAlign="center"
-                  onClick={() => handleDateClick(day.fullDate)}
+                  onClick={() => onDateClick(day.fullDate)}
                   sx={{
                     cursor: "pointer",
                     borderColor: hasSession ? "red" : "grey.400",
@@ -211,11 +193,95 @@ const Calendar: React.FC = () => {
     );
   };
 
+  const isSessionConflict = () => {
+    const conflictTime = scheduleSessions.find(
+      (item) =>
+        item.selectedDate === selectedDate &&
+        item.sessionTiming.hour === sessionTime.hour &&
+        item.sessionTiming.minute === sessionTime.minute &&
+        item.sessionTiming.period === sessionTime.period
+    );
+    if (conflictTime) {
+      return true;
+    } else {
+      return false;
+    }
+  };
+
+  const resetFormState = () => {
+    setSessionTime({ hour: "", minute: "", period: "" });
+    setEmailAddresses({ claimantEmail: "", respondentEmail: "" });
+    setSelectedDate(null);
+    setActiveSession(null);
+  };
+
+  const onDeleteSession = (caseNumber: string) => {
+    setScheduleSessions((prev) =>
+      prev.filter((item) => item.caseNumber !== caseNumber)
+    );
+    setSnackbarData((prev) => ({
+      ...prev,
+      open: true,
+      message: "Session Deleted Successfully",
+      status: "success",
+    }));
+  };
+
+  // edit from card will trigger the edit session modal
+  const onEditSession = (session: ScheduleSession) => {
+    setOpen(true);
+    setActiveSession(session);
+    setSessionTime(session.sessionTiming);
+    setEmailAddresses(session.emailAddresses);
+    setSelectedDate(session.selectedDate);
+  };
+
+  const validateSessionForm = (): boolean => {
+    const { hour, minute, period } = sessionTime;
+    const { claimantEmail, respondentEmail } = emailAddresses;
+
+    if (!hour || !minute || !period) {
+      setSnackbarData({
+        open: true,
+        message: "Please select session time (hour, minute, period).",
+        status: "error",
+        onClose: () => setSnackbarData((prev) => ({ ...prev, open: false })),
+      });
+      return false;
+    }
+
+    if (!claimantEmail || !respondentEmail) {
+      setSnackbarData({
+        open: true,
+        message: "Please provide both claimant and respondent email addresses.",
+        status: "error",
+        onClose: () => setSnackbarData((prev) => ({ ...prev, open: false })),
+      });
+      return false;
+    }
+
+    return true;
+  };
+
   const onSaveScheduleSession = () => {
-    if (!selectedDate) return;
+    if (!validateSessionForm()) return;
+
+    if (isSessionConflict()) {
+      setSnackbarData((prev) => ({
+        ...prev,
+        open: true,
+        message: "Session Conflict !!!",
+        status: "warning",
+      }));
+      return;
+    }
+
+    // const existingIndex = scheduleSessions.findIndex(
+    //   (s) => s.selectedDate === selectedDate
+    // );
 
     const existingIndex = scheduleSessions.findIndex(
-      (s) => s.selectedDate === selectedDate
+      (s) => s.caseNumber === activeSession?.caseNumber
     );
 
     const updatedSession: ScheduleSession = {
@@ -234,23 +300,20 @@ const Calendar: React.FC = () => {
       // If it's a new session, add it
       setScheduleSessions((prev) => [...prev, updatedSession]);
     }
-
-    // Reset form
+    
     resetFormState();
     setActiveSession(null);
     setOpen(false);
     setSnackbarData((prev) => ({
       ...prev,
       open: true,
-      message: "Session Scheduled",
+      message: activeSession
+        ? "Session Updated Successfully"
+        : "Session Scheduled Successfully",
       status: "success",
     }));
-  };
 
-  const resetFormState = () => {
-    setSessionTime({ hour: "", minute: "", period: "" });
-    setEmailAddresses({ claimantEmail: "", respondentEmail: "" });
-    setSelectedDate(null);
+    console.log("saved scheduled session ", updatedSession);
   };
 
   return (
@@ -288,11 +351,6 @@ const Calendar: React.FC = () => {
       </Stack>
 
       {renderCalendar()}
-      {sessions.map((session, index) => (
-        <Typography
-          key={index}
-        >{`${session.date}: ${session.caseNumber}`}</Typography>
-      ))}
       <Dialog open={open} onClose={handleClose} fullWidth>
         <DialogTitle>
           {activeSession ? "Edit Scheduled Session" : "Schedule a Session"}
@@ -327,8 +385,8 @@ const Calendar: React.FC = () => {
             <SessionCard
               key={session.caseNumber}
               session={session}
-              onDelete={() => {}}
-              onEdit={() => {}}
+              onDelete={onDeleteSession}
+              onEdit={onEditSession}
             />
           ))}
         </Box>
