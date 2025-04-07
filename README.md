@@ -61,10 +61,13 @@ Follow the steps below to get started:
 
    Using npm:
    ```bash
-   npm install
-   or
-   yarn install
+   npm install or npm i
    ```
+   Using yarn:
+    ```bash
+   yarn install or yarn i
+   ```
+   
 
 2. **Start the development server**
 
@@ -72,10 +75,13 @@ Using npm:
 
 ```bash
 npm run dev
+```
 
 Or using yarn:
 
+```bash
 yarn dev
 ```
+
 The app should now be running at http://localhost:5173 (unless configured differently).
 
