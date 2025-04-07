@@ -66,20 +66,15 @@ Follow the steps below to get started:
    yarn install
    ```
 
-   Start the development server
+2. **Start the development server**
 
 Using npm:
 
 ```bash
-Copy
-Edit
 npm run dev
-```
+
 Or using yarn:
 
-```bash
-Copy
-Edit
 yarn dev
 ```
 The app should now be running at http://localhost:5173 (unless configured differently).
