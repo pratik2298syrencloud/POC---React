@@ -52,3 +52,12 @@ export default tseslint.config({
   },
 })
 ```
+
+## To run the application install the packages by following command 
+```
+npm i 
+```
+or
+```
+yarn
+```
