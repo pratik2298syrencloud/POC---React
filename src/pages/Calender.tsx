@@ -18,6 +18,7 @@ import { v4 as uuidv4 } from "uuid";
 import { SessionCard } from "../components/SessionDetailsCard";
 import CustomSnackbar, { CustomSnackbarProps } from "../components/Snackbar";
 import SessionModal from "../components/SessionModal";
+import DoNotDisturbAltIcon from "@mui/icons-material/DoNotDisturbAlt";
 
 // Define types for session data
 export interface Session {
@@ -300,7 +301,7 @@ const Calendar: React.FC = () => {
       // If it's a new session, add it
       setScheduleSessions((prev) => [...prev, updatedSession]);
     }
-    
+
     resetFormState();
     setActiveSession(null);
     setOpen(false);
@@ -381,6 +382,17 @@ const Calendar: React.FC = () => {
           onClick={() => setShowScheduledSessionList(false)}
           padding={3}
         >
+          {scheduleSessions && !scheduleSessions.length && (
+            <Stack
+              direction="row"
+              justifyContent="center"
+              alignItems="center"
+              gap={0.5}
+            >
+              <DoNotDisturbAltIcon />
+              <Typography variant="h6" color="textSecondary">No Session Scheduled</Typography>
+            </Stack>
+          )}
           {scheduleSessions.map((session: ScheduleSession) => (
             <SessionCard
               key={session.caseNumber}
