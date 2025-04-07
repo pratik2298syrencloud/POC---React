@@ -62,3 +62,7 @@ Follow the steps below to get started:
    Using npm:
    ```bash
    npm install
+   or
+   yarn install
+   ```
+
