@@ -53,11 +53,12 @@ export default tseslint.config({
 })
 ```
 
-## To run the application install the packages by following command 
-```
-npm i 
-```
-or
-```
-yarn
-```
+## 🛠️ How to Run the Application
+
+Follow the steps below to get started:
+
+1. **Install dependencies**
+
+   Using npm:
+   ```bash
+   npm install
