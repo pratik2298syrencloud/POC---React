@@ -61,11 +61,11 @@ Follow the steps below to get started:
 
    Using npm:
    ```bash
-   npm install or npm i
+   npm install
    ```
    Using yarn:
     ```bash
-   yarn install or yarn i
+   yarn install
    ```
    
 
